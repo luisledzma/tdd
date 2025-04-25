@@ -25,6 +25,46 @@ public class TaskServiceTests
     }
 
     [Fact]
+    public async Task CreateTaskAsync_ShouldThrow_WhenTitleIsEmpty()
+    {
+        // Arrange
+        var mockRepo = new Mock<ITaskRepository>();
+        var taskService = new TaskService(mockRepo.Object);
+        var task = new TaskItemModel { Title = "", Description = "Testing", IsCompleted = false };
+
+        mockRepo.Setup(r => r.CreateTaskAsync(task)).ReturnsAsync(task);
+
+        // Act
+        var exception = await Assert.ThrowsAsync<ArgumentException>(() => taskService.CreateTaskAsync(task));
+        Assert.Equal("Title is required", exception.Message);
+    }
+    [Fact]
+    public async Task CreateTaskAsync_ShouldThrow_WhenDescriptionIsEmpty()
+    {
+        // Arrange
+        var mockRepo = new Mock<ITaskRepository>();
+        var taskService = new TaskService(mockRepo.Object);
+        var task = new TaskItemModel { Title = "Test", Description = "", IsCompleted = false };
+
+        mockRepo.Setup(r => r.CreateTaskAsync(task)).ReturnsAsync(task);
+
+        // Act
+        var exception = await Assert.ThrowsAsync<ArgumentException>(() => taskService.CreateTaskAsync(task));
+        Assert.Equal("Description is required", exception.Message);
+    }
+
+    [Fact]
+    public async Task CreateTaskAsync_ShouldThrow_WhenTaskIsNull()
+    {
+        // Arrange
+        var mockRepo = new Mock<ITaskRepository>();
+        var taskService = new TaskService(mockRepo.Object);
+        // Act & Assert
+        await Assert.ThrowsAsync<ArgumentNullException>(() =>
+            taskService.CreateTaskAsync(null));
+    }
+
+    [Fact]
     public async Task UpdateTaskAsync_ShouldReturnUpdatedTask()
     {
         // Arrange
@@ -78,6 +118,32 @@ public class TaskServiceTests
         Assert.Equal("Get Test", result?.Title);
         Assert.Equal("Get Testing", result?.Description);
         Assert.True(result?.IsCompleted);
+    }
+
+    [Fact]
+    public async Task GetTaskByIdAsync_ShouldReturnNull_WhenNotFound()
+    {
+        // Arrange
+        var mockRepo = new Mock<ITaskRepository>();
+        var taskService = new TaskService(mockRepo.Object);
+        int taskId = 999;
+
+        mockRepo.Setup(r => r.GetTaskByIdAsync(taskId)).ReturnsAsync((TaskItemModel?)null);
+
+        var result = await taskService.GetTaskByIdAsync(taskId);
+
+        // Assert
+        Assert.Null(result);
+    }
+
+    [Fact]
+    public async Task GetTaskByIdAsync_ShouldThrow_WhenIdIsZero()
+    {
+        var mockRepo = new Mock<ITaskRepository>();
+        var taskService = new TaskService(mockRepo.Object);
+
+        var ex = await Assert.ThrowsAsync<ArgumentException>(() => taskService.GetTaskByIdAsync(0));
+        Assert.Equal("Id is required", ex.Message);
     }
 
     [Fact]
