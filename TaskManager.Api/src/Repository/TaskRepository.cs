@@ -18,7 +18,7 @@ public class TaskRepository : ITaskRepository
         throw new NotImplementedException();
     }
 
-    public Task<bool> DeleteTaskAsync(int id)
+    public Task<TaskItemModel> DeleteTaskAsync(int id)
     {
         throw new NotImplementedException();
     }
@@ -33,7 +33,7 @@ public class TaskRepository : ITaskRepository
         throw new NotImplementedException();
     }
 
-    public Task<bool> UpdateTaskAsync(TaskItemModel task)
+    public Task<TaskItemModel> UpdateTaskAsync(TaskItemModel task)
     {
         throw new NotImplementedException();
     }
