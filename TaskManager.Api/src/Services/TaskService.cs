@@ -26,6 +26,9 @@ public class TaskService : ITaskService
 
     public Task<TaskItemModel> UpdateTaskAsync(TaskItemModel task)
     {
+        if (task == null)
+            throw new ArgumentNullException(nameof(task));
+
         if (string.IsNullOrWhiteSpace(task.Title))
             throw new ArgumentException("Title is required");
 

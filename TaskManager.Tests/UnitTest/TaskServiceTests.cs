@@ -83,6 +83,47 @@ public class TaskServiceTests
     }
 
     [Fact]
+    public async Task UpdateTaskAsync_ShouldThrow_WhenTitleIsEmpty()
+    {
+        // Arrange
+        var mockRepo = new Mock<ITaskRepository>();
+        var taskService = new TaskService(mockRepo.Object);
+        var task = new TaskItemModel { Title = "", Description = "Updated Testing", IsCompleted = false };
+
+        mockRepo.Setup(r => r.UpdateTaskAsync(task)).ReturnsAsync(task);
+
+        // Act
+        var exception = await Assert.ThrowsAsync<ArgumentException>(() => taskService.UpdateTaskAsync(task));
+        Assert.Equal("Title is required", exception.Message);
+    }
+
+    [Fact]
+    public async Task UpdateTaskAsync_ShouldThrow_WhenTaskIsNull()
+    {
+        // Arrange
+        var mockRepo = new Mock<ITaskRepository>();
+        var taskService = new TaskService(mockRepo.Object);
+        // Act & Assert
+        await Assert.ThrowsAsync<ArgumentNullException>(() =>
+            taskService.UpdateTaskAsync(null));
+    }
+
+    [Fact]
+    public async Task UpdateTaskAsync_ShouldThrow_WhenDescriptionIsEmpty()
+    {
+        // Arrange
+        var mockRepo = new Mock<ITaskRepository>();
+        var taskService = new TaskService(mockRepo.Object);
+        var task = new TaskItemModel { Title = "Update Test", Description = "", IsCompleted = false };
+
+        mockRepo.Setup(r => r.UpdateTaskAsync(task)).ReturnsAsync(task);
+
+        // Act
+        var exception = await Assert.ThrowsAsync<ArgumentException>(() => taskService.UpdateTaskAsync(task));
+        Assert.Equal("Description is required", exception.Message);
+    }
+
+    [Fact]
     public async Task DeleteTaskAsync_ShouldReturnDeletedTask()
     {
         // Arrange
@@ -99,6 +140,38 @@ public class TaskServiceTests
         Assert.Equal("Deleted Test", result.Title);
         Assert.Equal("Deleted Testing", result.Description);
         Assert.True(result.IsCompleted);
+    }
+
+    [Fact]
+    public async Task DeleteTaskAsync_ShouldThrow_WhenIdIsInvalid()
+    {
+        // Arrange
+        var mockRepo = new Mock<ITaskRepository>();
+        var taskService = new TaskService(mockRepo.Object);
+        var task = new TaskItemModel { Id = 0, Title = "Deleted Test", Description = "Deleted Testing", IsCompleted = false };
+
+        mockRepo.Setup(r => r.DeleteTaskAsync(task.Id)).ReturnsAsync(task);
+
+        // Act
+        var exception = await Assert.ThrowsAsync<ArgumentException>(() => taskService.DeleteTaskAsync(task));
+        Assert.Equal("Id is required", exception.Message);
+    }
+
+    [Fact]
+    public async Task DeleteTaskAsync_ShouldReturnNull_WhenTaskNotFound()
+    {
+        // Arrange
+        var mockRepo = new Mock<ITaskRepository>();
+        var taskService = new TaskService(mockRepo.Object);
+        var nonExistingTask = new TaskItemModel { Id = 999 };
+
+        mockRepo.Setup(r => r.DeleteTaskAsync(nonExistingTask.Id)).ReturnsAsync((TaskItemModel?)null!);
+
+        // Act
+        var result = await taskService.DeleteTaskAsync(nonExistingTask);
+
+        // Assert
+        Assert.Null(result);
     }
 
     [Fact]
@@ -176,5 +249,23 @@ public class TaskServiceTests
                 Assert.Equal("Get Testing2", t.Description);
                 Assert.False(t.IsCompleted);
             });
+    }
+
+    [Fact]
+    public async Task GetAllTasksAsync_ShouldReturnEmptyList_WhenNoTasks()
+    {
+        // Arrange
+        var mockRepo = new Mock<ITaskRepository>();
+        var taskService = new TaskService(mockRepo.Object);
+
+        mockRepo.Setup(r => r.GetAllTasksAsync())
+                .ReturnsAsync(new List<TaskItemModel>());
+
+        // Act
+        var result = await taskService.GetAllTasksAsync();
+
+        // Assert
+        Assert.NotNull(result); // Ensures it's not null
+        Assert.Empty(result);   // Ensures the list has no items
     }
 }
